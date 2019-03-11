@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <script type="text/javascript" src="js/close-pixelate.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.5/dat.gui.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="js/jQueryEmoji.min.js"></script>
+  <script type="text/javascript" src="js/emoji.js"></script>
+  <script type="text/javascript" src="js/emojione.js"></script>
+</head>
+
+<body>
+  <img id="portrait-image" src="img/portrait.jpg" />
+  <!-- <button id="btndownload">Download</button> -->
+  <!-- <a id="download" download onclick="download_img()">Download to myImage.png</a> -->
+  <img id="sprite" src="img/emojis.png"/>
+  <canvas id="emojis" width=1680 height="1680"></canvas>
+  <p id="placeholder"></p>
+</body>
+<style type="text/css">
+/*  p{
+    display: none;
+  }*/
+</style>
+<script type="text/javascript">
+var img = document.getElementById('portrait-image');
+console.log(img.width)
+var closepixel; //closepixel object
+var pixelData; //GUI controller
+
+function initPixel() {
+  let res = img.width / pixelData.column
+
+  closepixel = img.closePixelate([
+    { resolution: Math.floor(res / 2) * 2 },
+  ]);
+};
+
+var imagePixel = function() {
+  // Number of Pixels per line
+  this.column = 17;
+  // Resolution: Every few pixels
+  this.resolution = Math.floor(img.width / this.column / 2) * 2;
+}
+
+
+function updateEmoji() {
+  var canvass = document.getElementsByTagName("canvas");
+  // console.log(c[0])
+  if (canvass.length == 0) {
+    return
+  }
+  var canvas = canvass[0];
+  var ctx = canvas.getContext('2d');
+
+  var cols = pixelData.column;
+
+  let pixelArray = [];
+
+
+  for (let j = 0; j < cols; j++) {
+    let y = j * pixelData.resolution;
+    pixelArray.push([])
+    for (let i = 0; i < cols; i++) {
+      let x = i * pixelData.resolution;
+      var pixel = ctx.getImageData(x, y, 1, 1);
+      var data = pixel.data;
+      // var rgba = 'rgba(' + data[0] + ', ' + data[1] +
+      // ', ' + data[2] + ', ' + (data[3] / 255) + ')';
+
+      pixelArray[pixelArray.length - 1].push(data);
+    }
+  }
+
+
+  // console.log(pixelArray)
+
+}
+
+function initGUI() {
+  pixelData = new imagePixel();
+  var gui = new dat.GUI();
+  gui.add(pixelData, 'column', 1, 48).step(1).onChange(newColumn => {
+
+    pixelData.resolution = Math.floor(img.width / pixelData.column / 2) * 2;
+
+    // re-render the closePixelation
+    closepixel.render([{ resolution: pixelData.resolution }])
+
+  }).onFinishChange(newColumn => {
+    updateEmoji()
+  })
+
+}
+
+
+function init() {
+  initGUI()
+  initPixel()
+}
+
+
+window.addEventListener('load', init, false);
+
+var lists = [];
+
+function buildSprite() {
+  function emojify() {
+    $('p#placeholder').Emoji({
+      path: 'img/apple/',
+      // path: 'http://rodrigopolo.com/files/emojilist/img/apple/',
+      class: 'emoji',
+      ext: 'png'
+    })
+
+    var imgs = document.querySelectorAll('p#placeholder > img')
+    while (imgs == null) {
+      imgs = document.querySelectorAll('p#placeholder > img')
+    }
+
+    // imgs.forEach((img, index) => {
+    //   lists.push(img.src)
+    //   if (index % 100 == 99) {
+    //     // console.log(lists)
+    //     lists = []
+    //   }
+    // })
+    // console.log(lists)
+  }
+
+  let canvas = document.getElementById('emojis');
+  let ctx = canvas.getContext('2d');
+
+  // console.log(emojiList)
+  $('p#placeholder').html(emojiList)
+
+  emojify()
+
+  //Draw all the emoji to canvas
+  let w = 42;
+  let h = 42;
+  var imgs = document.querySelectorAll('p#placeholder > img')
+
+  for (let j = 0; j < h; j++) {
+    for (let i = 0; i < w; i++) {
+      let index = j * w + i;
+      if (index >= 1761) { return }
+      // console.log(emojiList[index])
+      // $('p#placeholder').html(emojiList[index])
+      let img = imgs[index];
+      img.onload = function() {
+        ctx.drawImage(img, i * 40, j * 40);
+        //   img.style.display = 'none';
+
+        if (index == 1760) {
+          download_img()
+        }
+
+      };
+
+    }
+  }
+
+}
+buildSprite()
+
+
+function download_img() {
+  var canvas = document.getElementById('emojis');
+  // console.log(canvas)
+  var url = canvas.toDataURL()
+  $('#download').attr('href', url.replace("image/png", "image/octet-stream")
+    // .replace(/^data:image\/(png|jpg);base64,/, "")
+  )
+  console.log("url", $('#download').attr('href'))
+}
+
+// var canvas = document.getElementById('emojis');
+// var bwn = document.getElementById('btndownload');
+
+// bwn.onclick = () => { download(canvas, 'myimage.png'); }
+
+// /* Canvas Donwload */
+// function download(canvas, filename) {
+//   /// create an "off-screen" anchor tag
+//   var lnk = document.createElement('a'),
+//     e;
+
+
+//   /// the key here is to set the download attribute of the a tag
+//   lnk.download = filename;
+
+//   /// convert canvas content to data-uri for link. When download
+//   /// attribute is set the content pointed to by link will be
+//   /// pushed as "download" in HTML5 capable browsers
+//   lnk.href = canvas.toDataURL("image/png;base64");
+//   console.log(lnk.href)
+
+//   $('#sprite').attr('src', canvas.toDataURL().replace("image/png", "image/octet-stream"))
+
+//   // create a "fake" click-event to trigger the download
+//   if (document.createEvent) {
+//     e = document.createEvent("MouseEvents");
+//     e.initMouseEvent("click", true, true, window,
+//       0, 0, 0, 0, 0, false, false, false,
+//       false, 0, null);
+
+//     lnk.dispatchEvent(e);
+//   } else if (lnk.fireEvent) {
+//     lnk.fireEvent("onclick");
+//   }
+// }
+</script>
+
+</html>
