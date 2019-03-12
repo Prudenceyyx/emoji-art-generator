@@ -5,31 +5,57 @@
   <meta charset="UTF-8">
   <title></title>
   <script type="text/javascript" src="js/close-pixelate.js"></script>
+  <link rel="stylesheet" type="text/css" href="js/pixelate.min.css">
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.5/dat.gui.min.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="js/jquery.min.js"></script>
+  <script type="text/javascript" src="js/pixelate.min.js"></script>
+  <script type="text/javascript" src="js/chroma.min.js"></script>
   <script src="js/jQueryEmoji.min.js"></script>
+  <script type="text/javascript" src="js/color.js"></script>
   <script type="text/javascript" src="js/emoji.js"></script>
   <script type="text/javascript" src="js/emojione.js"></script>
+  <script type="text/javascript" src="js/emojiController.js"></script>
 </head>
 
 <body>
   <img id="portrait-image" src="img/portrait.jpg" />
+  <button id="pixelate">Pixelate Emojis</button>
+  <p id="placeholder"></p>
   <!-- <button id="btndownload">Download</button> -->
   <!-- <a id="download" download onclick="download_img()">Download to myImage.png</a> -->
-  <img id="sprite" src="img/emojis.png"/>
+  <!-- <img id="sprite" src="img/emojis.png" /> -->
+  <canvas id="sprite_canvas" width=1008 height="1008"></canvas>
+  <!-- <img src="img/emojis.png" /> -->
   <canvas id="emojis" width=1680 height="1680"></canvas>
-  <p id="placeholder"></p>
+  <p id="all"></p>
 </body>
 <style type="text/css">
-/*  p{
-    display: none;
-  }*/
+#emojis {
+  display: none;
+}
+
+p {
+  line-height: 22px;
+}
 </style>
 <script type="text/javascript">
 var img = document.getElementById('portrait-image');
-console.log(img.width)
+console.log('image width: ', img.width)
 var closepixel; //closepixel object
 var pixelData; //GUI controller
+
+
+//emoji to text
+// emojiList.forEach((e, i) => {
+//   let p = document.getElementById("all")
+//   p.innerHTML += e
+//   if (i % 42 == 41) {
+//     p.innerHTML += '<br>'
+//   }
+
+// })
+
+
 
 function initPixel() {
   let res = img.width / pixelData.column
@@ -37,6 +63,7 @@ function initPixel() {
   closepixel = img.closePixelate([
     { resolution: Math.floor(res / 2) * 2 },
   ]);
+
 };
 
 var imagePixel = function() {
@@ -46,37 +73,41 @@ var imagePixel = function() {
   this.resolution = Math.floor(img.width / this.column / 2) * 2;
 }
 
-
-function updateEmoji() {
-  var canvass = document.getElementsByTagName("canvas");
-  // console.log(c[0])
-  if (canvass.length == 0) {
-    return
+function chunk(array, size) {
+  const chunked_arr = [];
+  for (let i = 0; i < array.length; i++) {
+    const last = chunked_arr[chunked_arr.length - 1];
+    if (!last || last.length === size) {
+      chunked_arr.push([array[i]]);
+    } else {
+      last.push(array[i]);
+    }
   }
-  var canvas = canvass[0];
-  var ctx = canvas.getContext('2d');
+  return chunked_arr;
+}
 
-  var cols = pixelData.column;
 
+function getPixelArray(canvas, cols, res, size) {
+  let ctx = canvas.getContext('2d');
   let pixelArray = [];
 
 
   for (let j = 0; j < cols; j++) {
-    let y = j * pixelData.resolution;
+
     pixelArray.push([])
     for (let i = 0; i < cols; i++) {
-      let x = i * pixelData.resolution;
-      var pixel = ctx.getImageData(x, y, 1, 1);
-      var data = pixel.data;
-      // var rgba = 'rgba(' + data[0] + ', ' + data[1] +
-      // ', ' + data[2] + ', ' + (data[3] / 255) + ')';
 
-      pixelArray[pixelArray.length - 1].push(data);
+      var pixel = ctx.getImageData(i * res, j * res, size, size);
+      var data = pixel.data;
+      // console.log(data[0], data[1], data[2], data[3])
+      var rgba = 'rgba(' + data[0] + ', ' + data[1] +
+        ', ' + data[2] + ', ' + (data[3] / 255) + ')';
+
+      // pixelArray[pixelArray.length - 1].push(rgba)
+      pixelArray[pixelArray.length - 1].push(chroma(rgba));
     }
   }
-
-
-  // console.log(pixelArray)
+  return pixelArray;
 
 }
 
@@ -91,15 +122,104 @@ function initGUI() {
     closepixel.render([{ resolution: pixelData.resolution }])
 
   }).onFinishChange(newColumn => {
-    updateEmoji()
-  })
+
+    // updateEmojiText()
+  });
 
 }
 
 
+
+function getEmojiIndex(canvas, col) {
+  let pixels = getPixelArray(canvas, col, Math.floor(canvas.width / col / 2) * 2, 1);
+  // console.log("pixels", pixels)
+
+  var result = []
+  for (let j = 0; j < pixels.length; j++) {
+    result.push([])
+    for (let i = 0; i < pixels[0].length; i++) {
+      let indexs = findEmoji(pixels[j][i], emojiColors)
+      // let indexs = emojiController.getEmoji(pixels[j][i])
+      result[result.length - 1].push(indexs)
+    }
+  }
+  return result
+}
+
+//Update Emoji Text
+function updateEmojiText() {
+  let canvas = document.getElementById("portrait-image");
+  let es = getEmojiIndex(canvas, pixelData.column)
+  var p = document.getElementById("placeholder");
+  p.innerHTML = '';
+  es.forEach(row => {
+    let a = row.map(e => emojiList[e[0] * 42 + e[1]])
+
+    let s = a.join("")
+    s = s.replace(/\s/g, '')
+    // console.log(s)
+
+    p.innerHTML += s
+    p.innerHTML += '<br>'
+  })
+}
+
+
+function initSprite() {
+  let p = document.getElementById("all")
+  let canvas = document.getElementById('sprite_canvas');
+  emojiController.toText(p)
+  emojiController.toCanvas('#all', canvas);
+
+  // emojiController.toPixel(canvas);
+  let button = document.getElementById("pixelate");
+  button.onclick = () => {
+    // After all image is loaded
+    emojiController.toPixelArray(canvas);
+    emojiController.toPixel(canvas)
+
+    let portrait = document.getElementById("portrait-image");
+
+    let pixels = getPixelArray(portrait, 17, Math.floor(portrait.width / pixelData.column / 2) * 2, 1);
+    // console.log("pixels", pixels)
+
+    var result = []
+    for (let j = 0; j < pixels.length; j++) {
+      result.push([])
+      for (let i = 0; i < pixels[0].length; i++) {
+        let indexs = emojiController.getEmoji(pixels[j][i])
+        // let indexs = emojiController.getEmoji(pixels[j][i])
+        result[result.length - 1].push(indexs)
+      }
+    }
+
+    // console.log(result)
+    // // let es = getEmojiIndex(canvas, pixelData.column)
+   
+    var placeholder = document.getElementById("placeholder");
+    placeholder.innerHTML = '';
+    result.forEach(row => {
+      let a = row.map(e => emojiController.list[e])
+
+      let s = a.join("")
+      s = s.replace(/\s/g, '')
+      // console.log(a)
+
+      placeholder.innerHTML += s
+      placeholder.innerHTML += '<br>'
+    })
+
+  }
+
+}
+
 function init() {
+  initSprite()
+
   initGUI()
   initPixel()
+  // updateEmojiText()
+
 }
 
 
@@ -120,21 +240,11 @@ function buildSprite() {
     while (imgs == null) {
       imgs = document.querySelectorAll('p#placeholder > img')
     }
-
-    // imgs.forEach((img, index) => {
-    //   lists.push(img.src)
-    //   if (index % 100 == 99) {
-    //     // console.log(lists)
-    //     lists = []
-    //   }
-    // })
-    // console.log(lists)
   }
 
   let canvas = document.getElementById('emojis');
   let ctx = canvas.getContext('2d');
 
-  // console.log(emojiList)
   $('p#placeholder').html(emojiList)
 
   emojify()
@@ -148,70 +258,82 @@ function buildSprite() {
     for (let i = 0; i < w; i++) {
       let index = j * w + i;
       if (index >= 1761) { return }
-      // console.log(emojiList[index])
-      // $('p#placeholder').html(emojiList[index])
       let img = imgs[index];
       img.onload = function() {
         ctx.drawImage(img, i * 40, j * 40);
-        //   img.style.display = 'none';
-
-        if (index == 1760) {
-          download_img()
-        }
-
       };
 
     }
   }
 
 }
-buildSprite()
+// buildSprite()
 
-
-function download_img() {
-  var canvas = document.getElementById('emojis');
-  // console.log(canvas)
-  var url = canvas.toDataURL()
-  $('#download').attr('href', url.replace("image/png", "image/octet-stream")
-    // .replace(/^data:image\/(png|jpg);base64,/, "")
-  )
-  console.log("url", $('#download').attr('href'))
+function findEmoji(color, colorList) {
+  // Compute a Matrix of distance to the color
+  let distances = []
+  for (let row = 0; row < colorList.length; row++) {
+    distances.push(colorList[row].map((x, col) =>
+      chroma.distance(color, colorList[row][col])
+      // , 'rgb'
+    ));
+  }
+  // Find index of the min of the Matrix
+  var minPerRow = distances.map(rowElements => Math.min(...rowElements))
+  let rowNum = minPerRow.indexOf(Math.min(...minPerRow))
+  let colNum = distances[rowNum].indexOf(minPerRow[rowNum])
+  return [rowNum, colNum]
 }
 
-// var canvas = document.getElementById('emojis');
-// var bwn = document.getElementById('btndownload');
 
-// bwn.onclick = () => { download(canvas, 'myimage.png'); }
+// var spriteImg = document.getElementById("sprite");
+// spriteImg.onload = () => {
 
-// /* Canvas Donwload */
-// function download(canvas, filename) {
-//   /// create an "off-screen" anchor tag
-//   var lnk = document.createElement('a'),
-//     e;
+//   var canvas = document.getElementById("sprite_canvas");
+//   canvas.setAttribute('width', spriteImg.width)
+//   canvas.setAttribute('height', spriteImg.height)
+//   var ctx = canvas.getContext('2d')
+//   ctx.drawImage(spriteImg, 0, 0, spriteImg.width, spriteImg.width)
 
+//   let pixelArray = [];
+//   let res = Math.floor(canvas.width / 42)
+//   console.log('res', res)
 
-//   /// the key here is to set the download attribute of the a tag
-//   lnk.download = filename;
+//   for (let j = 0; j < 42; j++) {
+//     let y = j * res;
+//     pixelArray.push([])
+//     for (let i = 0; i < 42; i++) {
+//       // For each emoji
+//       let x = i * res;
+//       var pixel = ctx.getImageData(x + 2, y + 2, res - 4, res - 4);
+//       var data = pixel.data;
 
-//   /// convert canvas content to data-uri for link. When download
-//   /// attribute is set the content pointed to by link will be
-//   /// pushed as "download" in HTML5 capable browsers
-//   lnk.href = canvas.toDataURL("image/png;base64");
-//   console.log(lnk.href)
+//       data = chunk(data, 4)
 
-//   $('#sprite').attr('src', canvas.toDataURL().replace("image/png", "image/octet-stream"))
+//       //get average color of the size
+//       data = data
+//         .filter(color => color[3] > 60)
+//         .map(color =>
+//           chroma(color[0], color[1], color[2]).alpha(color[3] / 255).css()
+//         )
 
-//   // create a "fake" click-event to trigger the download
-//   if (document.createEvent) {
-//     e = document.createEvent("MouseEvents");
-//     e.initMouseEvent("click", true, true, window,
-//       0, 0, 0, 0, 0, false, false, false,
-//       false, 0, null);
+//       var average = chroma.average(data);
+//       pixelArray[pixelArray.length - 1].push(average.css())
 
-//     lnk.dispatchEvent(e);
-//   } else if (lnk.fireEvent) {
-//     lnk.fireEvent("onclick");
+//     }
 //   }
+
+//   ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+//   pixelArray.forEach((emojiRow, j) => {
+//     emojiRow.forEach((color, i) => {
+//       ctx.beginPath();
+//       ctx.rect(i * res + 1, j * res + 1, res - 2, res - 2);
+//       ctx.fillStyle = color;
+//       ctx.fill();
+//     })
+//   })
+
 // }
 </script>
 
