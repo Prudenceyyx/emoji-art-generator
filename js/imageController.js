@@ -41,7 +41,7 @@ var imageController = {
       return
     }
 
-    let canvas = document.getElementById(this.img.id)
+    let canvas = document.getElementById(this.img.id+'_canvas')
     let ctx = canvas.getContext('2d');
     let pixelArray = []
     // Get pixel from pixelated image

@@ -19,16 +19,17 @@
 </head>
 
 <body>
-  <!-- <img id="portrait-image" src="img/portrait.jpg" /> -->
-  <img id="portrait-image" src="img/large.png" />
+  <!-- <form action="" method="POST"> -->
+  <input type="file" onchange="preview()">
   <button id="pixelate">Pixelate Emojis</button>
+  <!-- <p>Drag your files here or click in this area.</p> -->
+  <!-- <button type="submit">Upload</button> -->
+  <!-- </form> -->
+  <!-- <img id="portrait-image" src="img/portrait.jpg" /> -->
+  <img id="portrait-image" src="" />
   <p id="placeholder" style="letterSpacing:14px"></p>
-  <!-- <button id="btndownload">Download</button> -->
-  <!-- <a id="download" download onclick="download_img()">Download to myImage.png</a> -->
-  <!-- <img id="sprite" src="img/emojis.png" /> -->
-  <canvas id="sprite_canvas" width=1008 height="1008"></canvas>
-  <!-- <img src="img/emojis.png" /> -->
-  <canvas id="emojis" width=1680 height="1680"></canvas>
+  <canvas id="sprite_canvas" width=1008 height="1008" style="display:none"></canvas>
+  <canvas id="emojis" width=1680 height="1680" style="display:none"></canvas>
   <p id="all"></p>
 </body>
 <style type="text/css">
@@ -41,6 +42,25 @@ p {
 }
 </style>
 <script type="text/javascript">
+// document.getElementsByTagName("form")[0]
+
+function preview() {
+  var preview = document.getElementById("portrait-image"); //selects the query named img
+  var file = document.querySelector('input[type=file]').files[0]; //sames as here
+  var reader = new FileReader();
+
+  reader.onloadend = function() {
+    preview.src = reader.result;
+  }
+
+  if (file) {
+    reader.readAsDataURL(file); //reads the data as a URL
+  } else {
+    preview.src = "";
+  }
+}
+
+
 function initSprite() {
   let p = document.getElementById("all")
   let canvas = document.getElementById('sprite_canvas');
@@ -52,9 +72,15 @@ function initSprite() {
 function init() {
   initSprite()
 
+
+
+}
+
+function Pixelate() {
   let img = document.getElementById("portrait-image");
 
   imageController.setImg(img, 17)
+
 
   // Init GUI
   var gui = new dat.GUI();
@@ -73,13 +99,15 @@ function init() {
   });
 
   imageController.toPixel();
-
 }
 
 
 
 
+
 document.getElementById("pixelate").onclick = () => {
+
+  Pixelate()
 
   let canvas = document.getElementById('sprite_canvas');
   let placeholder = document.getElementById("placeholder");
