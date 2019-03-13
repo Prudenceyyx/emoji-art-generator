@@ -54,7 +54,13 @@ var imageController = {
       }
     }
     pixelArray = pixelArray
-      .map(colorArray => chroma(colorArray[0], colorArray[1], colorArray[2])) //no alpha
+      .map(colorArray => {
+        // Parse transparent to white
+        if (colorArray[3] == 0) {
+          return chroma(255, 255, 255)
+        }
+        return chroma(colorArray[0], colorArray[1], colorArray[2])
+      }) //no alpha
 
     this.pixelArray = pixelArray;
     return pixelArray;
@@ -63,9 +69,15 @@ var imageController = {
   updateEmoji: function(emojiController, placeholder) {
     if (!this.pixelArray) { console.error("No pixel array for the image yet") }
 
+    console.log(emojiController.list)
+    console.log(emojiController.pixelArray)
+
     let emojiIndex = this.pixelArray.map(chromaObject => {
-      return emojiController.getEmoji(chromaObject.css())
+      let i = emojiController.getEmoji(chromaObject.css());
+      console.log(chromaObject.css(), emojiController.pixelArray[i].css(), i)
+      return i
     })
+
 
     placeholder.innerHTML = '';
     emojiIndex.map((eIndex, i) => {
