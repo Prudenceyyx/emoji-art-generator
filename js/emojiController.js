@@ -1,6 +1,6 @@
 var emojiController = {
   // list: emojiList,
-  list: "😀,🌕,🌝,💛,🏷,♥️, 🔴, ⚪️,🏳,🖱,⚫️,⬛️,💙,🛂,🔷,🔵,🐬,💠,🐦,📘,🍊,😡,☣️,💰,🐵,💼,💩,😈,🐻,💜,✝️,💗,🌸,🌳,🤢,🌲,🎾,⬜️,☑️,💡,📄,👗,🔫,☁️".replace(' ', '').split(","),
+  list: "😀,🌕,🌝,💛,🏷,💡,♥️,🔴,⚪️,🏳,🖱,📄,⬜️,☑️,👽,🐦,⚫️,⬛️,💙,🛂,🔷,🔵,🐬,💠,📘,🍊,😡,☣️,💰,🐵,💼,💩,😈,🐻,💜,✝️,💗,🌸,🌳,🤢,🌲,🎾,☁️".replace(' ', '').split(","),
   sheet: undefined,
   pixelArray: undefined,
   a: 5,
@@ -99,7 +99,6 @@ var emojiController = {
         color = color.css();
       }
       ctx.fillStyle = color;
-      // console.log(array[j * 42 + i])
       ctx.fill();
     });
   },
@@ -109,8 +108,7 @@ var emojiController = {
     let distances = []
 
     this.loop((i, j) => {
-      if(j*42+i>=this.pixelArray.length){return }
-      // distances.push(chroma.distance(color, this.pixelArray[j * 42 + i]))
+      if(j*42+i>=this.pixelArray.length){return}
       // console.log(color,this.pixelArray[j * 42 + i] )
       distances.push(chroma.deltaE(color, this.pixelArray[j * 42 + i]))
     });
