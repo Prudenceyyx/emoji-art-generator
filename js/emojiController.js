@@ -41,8 +41,8 @@ var emojiController = {
 
 
     $(p_selector).Emoji({
-      path: 'img/apple/',
-      // path: 'http://rodrigopolo.com/files/emojilist/img/apple/',
+      // path: 'img/apple/',
+      path: 'http://rodrigopolo.com/files/emojilist/img/apple/',
       // path: 'img/emojione/',
       class: 'emoji',
       ext: 'png'
