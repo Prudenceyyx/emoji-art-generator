@@ -4,13 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <title></title>
-  <script type="text/javascript" src="js/close-pixelate.js"></script>
+  <script type="text/javascript" src="js/dist/close-pixelate.js"></script>
   <link rel="stylesheet" type="text/css" href="js/pixelate.min.css">
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.5/dat.gui.min.js"></script>
-  <script src="js/jquery.min.js"></script>
-  <script type="text/javascript" src="js/pixelate.min.js"></script>
-  <script type="text/javascript" src="js/chroma.min.js"></script>
-  <script src="js/jQueryEmoji.js"></script>
+  <script src="js/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="js/dist/pixelate.min.js"></script>
+  <script type="text/javascript" src="js/dist/chroma.min.js"></script>
+  <script type="text/javascript" src="js/dist/jQueryEmoji.js"></script>
+  
   <script type="text/javascript" src="js/emoji.js"></script>
   <script type="text/javascript" src="js/emojione.js"></script>
   <script type="text/javascript" src="js/emojiController.js"></script>
@@ -24,8 +25,8 @@
   <!-- <p>Drag your files here or click in this area.</p> -->
   <!-- <button type="submit">Upload</button> -->
   <!-- </form> -->
-  <!-- <img id="portrait-image" src="img/portrait.jpg" /> -->
-  <img id="portrait-image" src="" />
+  <img id="portrait-image" src="img/portrait.jpg" crossorigin="anonymous" />
+  <!-- <img id="portrait-image" src="" crossorigin="anonymous" /> -->
   <p id="placeholder" style="letterSpacing:14px"></p>
   <canvas id="sprite_canvas" width=1008 height="1008" style="display:none"></canvas>
   <canvas id="emojis" width=1680 height="1680" style="display:none"></canvas>

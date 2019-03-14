@@ -39,9 +39,6 @@ Licensed under MIT
 
     plugin.init = function() {
       plugin.settings = $.extend({}, defaults, options);
-      if (plugin.settings.path.indexOf('https://github.com/') != -1) {
-        plugin.settings.path+'?raw=true'
-      }
       $element.html(parser($element.html(), plugin.settings.path, plugin.settings.alt, plugin.settings.class, plugin.settings.ext));
 
     }
