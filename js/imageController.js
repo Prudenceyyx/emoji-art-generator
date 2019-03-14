@@ -1,5 +1,5 @@
 var imageController = {
-  col: undefined,
+  col: 17,//init value
   row: undefined,
   img: undefined,
   res: undefined,
@@ -69,8 +69,8 @@ var imageController = {
   updateEmoji: function(emojiController, placeholder) {
     if (!this.pixelArray) { console.error("No pixel array for the image yet") }
 
-    console.log(emojiController.list)
-    console.log(emojiController.pixelArray)
+    // console.log(emojiController.list)
+    // console.log(emojiController.pixelArray)
 
     let emojiIndex = this.pixelArray.map(chromaObject => {
       let i = emojiController.getEmoji(chromaObject.css());
